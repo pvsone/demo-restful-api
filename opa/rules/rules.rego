@@ -43,3 +43,24 @@ allow {
 #   input.path = ["hr", "dashboard"]
 #   input.user == hr[_]
 # }
+
+################
+# Filter Rules
+filter := {
+  "allowed": true,
+  "data": filter_data
+}
+
+filter_data[record] {
+  user_is_hr
+  record := input.data[_]
+}
+
+filter_data[record] {
+  not user_is_hr
+  record :=  json.remove(input.data[_], ["ssn"])
+}
+
+user_is_hr {
+  input.user == hr[_]
+}

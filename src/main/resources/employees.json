@@ -1,0 +1,9 @@
+{
+  "employees": [
+    { "name": "alice", "ssn": "111-11-1111", "hire-date": "01/01/2010" },
+    { "name": "betty", "ssn": "222-22-2222", "hire-date": "02/02/2010" },
+    { "name": "bob", "ssn": "333-33-3333", "hire-date": "03/03/2010" },
+    { "name": "charlie", "ssn": "444-44-4444", "hire-date": "04/04/2010" },
+    { "name": "dave", "ssn": "555-55-5555", "hire-date": "05/05/2010" }
+  ]
+}

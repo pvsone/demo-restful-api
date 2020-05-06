@@ -1,5 +1,8 @@
 version: '3'
 services:
+  # Uncomment either OPA STANDALONE or OPA DISCOVERY
+
+  # OPA STANDALONE
   opa:
     image: openpolicyagent/opa:latest
     ports:
@@ -13,6 +16,18 @@ services:
     volumes:
       - ./opa/rules/rules.rego:/rules.rego
 
+  # OPA DISCOVERY
+  # opa:
+  #   image: openpolicyagent/opa:latest
+  #   ports:
+  #     - "8181:8181"
+  #   volumes:
+  #     - ./opa/discovery/opa-conf.yaml:/opa-conf.yaml
+  #   command:
+  #     - "run"
+  #     - "--server"
+  #     - "--config-file=/opa-conf.yaml"
+
   api_server:
     image: jdemo-restful-api:0.0.2
     ports:
@@ -20,3 +35,4 @@ services:
     environment:
       - OPA_ADDR=http://opa:8181
       - POLICY_PATH=/v1/data/rules/main
+      - FILTER_PATH=/v1/data/rules/filter
