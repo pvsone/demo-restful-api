@@ -29,7 +29,7 @@ services:
   #     - "--config-file=/opa-conf.yaml"
 
   api_server:
-    image: jdemo-restful-api:0.0.2
+    image: jdemo-restful-api:0.0.3
     ports:
       - "8080:8080"
     environment:

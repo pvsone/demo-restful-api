@@ -2,3 +2,10 @@ opa:
   url: ${OPA_ADDR:http://localhost:8181}
   policyPath: ${POLICY_PATH:/v1/data/rules/main}
   filterPath: ${FILTER_PATH:/v1/data/rules/filter}
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          public-key-location: classpath:jwtio-key.pub
