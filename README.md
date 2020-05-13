@@ -1,6 +1,5 @@
 # jdemo-restful-api
-
-A minimal port of `openpolicyagent/demo-restful-api:0.2` to Java
+Port of `openpolicyagent/demo-restful-api:0.2` to Java
 
 ## Build
 ```
@@ -25,6 +24,13 @@ curl -H "Authorization: Bearer $ALICE_TOKEN" localhost:8080/finance/salary/alice
 curl -H "Authorization: Bearer $BETTY_TOKEN" localhost:8080/finance/salary/alice    # Denied
 curl -H "Authorization: Bearer $BETTY_TOKEN" localhost:8080/finance/salary/charlie  # Allowed - manager
 curl -H "Authorization: Bearer $DAVID_TOKEN" localhost:8080/finance/salary/bob      # Allowed - hr
+
+# Data Filtering
+curl -H "Authorization: Bearer $DAVID_TOKEN" localhost:8080/employees  # Unfiltered
+curl -H "Authorization: Bearer $BETTY_TOKEN" localhost:8080/employees  # Filtered
+
+# Token Creation
+http -a betty:password :8080/token
 ```
 
 ## References

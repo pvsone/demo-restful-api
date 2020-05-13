@@ -13,8 +13,8 @@ allow {
   some username
   input.method == "GET"
   input.path = ["finance", "salary", username]
-  token.payload.user == username
-  user_owns_token
+  jwt.payload.user == username
+  user_owns_jwt
 }
 
 # Allow managers to get their subordinate's salaries.
@@ -22,22 +22,22 @@ allow {
   some username
   input.method == "GET"
   input.path = ["finance", "salary", username]
-  token.payload.subordinates[_] == username
-  user_owns_token
+  jwt.payload.subordinates[_] == username
+  user_owns_jwt
 }
 
 # Allow HR members to get anyone's salary.
 allow {
   input.method == "GET"
   input.path = ["finance", "salary", _]
-  token.payload.hr == true
-  user_owns_token
+  jwt.payload.hr == true
+  user_owns_jwt
 }
 
-# Ensure that the token was issued to the user supplying it.
-user_owns_token { input.user == token.payload.azp }
+# Ensure that the jwt was issued to the user supplying it.
+user_owns_jwt { input.user == jwt.payload.azp }
 
-# Helper to get the token payload.
-token = {"payload": payload} {
-  [header, payload, signature] := io.jwt.decode(input.token)
+# Helper to get the jwt payload.
+jwt = {"payload": payload} {
+  [header, payload, signature] := io.jwt.decode(input.jwt)
 }

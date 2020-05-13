@@ -30,11 +30,14 @@ class DemoController {
     @Value("${opa.url}")
     private String opaUrl;
 
-    @Value("${opa.policyPath}")
-    private String opaPolicyPath;
+    @Value("${opa.mainPath}")
+    private String opaMainPath;
 
     @Value("${opa.filterPath}")
     private String opaFilterPath;
+
+    @Value("${opa.tokenPath}")
+    private String opaTokenPath;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -44,86 +47,53 @@ class DemoController {
 
     final Logger logger = LoggerFactory.getLogger(DemoController.class);
 
-    private Map checkAuth(String user, String token, String method, String[] pathAsArray) {
-        Map<String, Object> inputValue = new HashMap<>();
-        inputValue.put("user", user);
-        inputValue.put("token", token);
-        inputValue.put("path", pathAsArray);
-        inputValue.put("method", method);
-        Map<String, Object> input = Collections.singletonMap("input", inputValue);
-
-        logger.info("Checking auth...");
-        logger.info(dumpJson(input));
-
-        ResponseEntity<Map> response = restTemplate.postForEntity(
-                opaUrl + opaPolicyPath, input, Map.class);
-
-        if (response.getStatusCodeValue() >= 300) {
-            logger.error("Error checking auth, got status " + response.getStatusCodeValue());
-            return Collections.EMPTY_MAP;
-        }
-
-        Map<String, Object> body = response.getBody();
-        logger.info("Auth response:");
-        logger.info(dumpJson(body));
-        return body;
-    }
-
     @RequestMapping("/**")
-    public String root(HttpServletRequest request) {
-        String user = getUserName(request.getUserPrincipal());
-        String token = getTokenValue(request.getUserPrincipal());
-        String path = request.getRequestURI().substring(1); // remove the leading "/" from the path prior to splitting
-        String[] pathAsArray = path.split("/");
-
-        Map<String, Object> response = checkAuth(user, token, request.getMethod(), pathAsArray);
-        Map<String, Object> result = (Map<String, Object>) response.get("result");
-
-        // return success/error message per the "allowed" value
-        return (Boolean.TRUE.equals(result.get("allowed"))) ?
-                String.format("Success: user %s is authorized", user) :
-                String.format("Error: user %s is not authorized to %s url /%s", user, request.getMethod(), path);
+    public Map main(HttpServletRequest request) {
+        Map<String, Object> response = queryOpa(opaMainPath, request, null);
+        return (Map<String, Object>) response.get("result");
     }
 
     @RequestMapping("/employees/**")
-    public ArrayList employees(HttpServletRequest request) throws IOException {
+    public Map filter(HttpServletRequest request) throws IOException {
         File file = new ClassPathResource("employees.json").getFile();
-        Map<String, Object> map = objectMapper.readValue(file, new TypeReference<>() {
-        });
+        Map<String, Object> map = objectMapper.readValue(file, new TypeReference<>() {});
         ArrayList employees = (ArrayList) map.get("employees");
 
-        String user = getUserName(request.getUserPrincipal());
-        String token = getTokenValue(request.getUserPrincipal());
+        Map<String, Object> response = queryOpa(opaFilterPath, request, employees);
+        return (Map<String, Object>) response.get("result");
+    }
+
+    @RequestMapping("/token/**")
+    public Map token(HttpServletRequest request) {
+        Map<String, Object> response = queryOpa(opaTokenPath, request, null);
+        return (Map<String, Object>) response.get("result");
+    }
+
+    private Map queryOpa(String opaQueryPath, HttpServletRequest request, ArrayList data) {
         String path = request.getRequestURI().substring(1); // remove the leading "/" from the path prior to splitting
         String[] pathAsArray = path.split("/");
 
-        Map<String, Object> response = filterData(user, token, request.getMethod(), pathAsArray, employees);
-        Map<String, Object> result = (Map<String, Object>) response.get("result");
-        return (ArrayList) result.get("data");
-    }
-
-    private Map filterData(String user, String token, String method, String[] pathAsArray, ArrayList data) {
         Map<String, Object> inputValue = new HashMap<>();
-        inputValue.put("user", user);
-        inputValue.put("token", token);
+        inputValue.put("user", getUserName(request.getUserPrincipal()));
+        inputValue.put("jwt", getTokenValue(request.getUserPrincipal()));
         inputValue.put("path", pathAsArray);
-        inputValue.put("method", method);
+        inputValue.put("method", request.getMethod());
         inputValue.put("data", data);
         Map<String, Object> input = Collections.singletonMap("input", inputValue);
 
-        logger.info("Filtering data...");
+        logger.info("Query with input...");
         logger.info(dumpJson(input));
 
         ResponseEntity<Map> response = restTemplate.postForEntity(
-                opaUrl + opaFilterPath, input, Map.class);
+                opaUrl + opaQueryPath, input, Map.class);
 
         if (response.getStatusCodeValue() >= 300) {
-            logger.error("Error filtering data, got status " + response.getStatusCodeValue());
+            logger.error("Error in query, got status " + response.getStatusCodeValue());
             return Collections.EMPTY_MAP;
         }
 
         Map<String, Object> body = response.getBody();
-        logger.info("Filtered response:");
+        logger.info("Query response:");
         logger.info(dumpJson(body));
         return body;
     }

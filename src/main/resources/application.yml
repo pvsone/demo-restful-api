@@ -1,7 +1,8 @@
 opa:
   url: ${OPA_ADDR:http://localhost:8181}
-  policyPath: ${POLICY_PATH:/v1/data/rules/main}
+  mainPath: ${MAIN_PATH:/v1/data/rules/main}
   filterPath: ${FILTER_PATH:/v1/data/rules/filter}
+  tokenPath: ${FILTER_PATH:/v1/data/rules/token}
 
 spring:
   security:
