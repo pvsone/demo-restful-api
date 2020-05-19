@@ -28,6 +28,7 @@ class DemoSecurityConfig extends WebSecurityConfigurerAdapter {
                 .withUser("betty").password("{noop}password").roles("USER").and()
                 .withUser("bob").password("{noop}password").roles("USER").and()
                 .withUser("charlie").password("{noop}password").roles("USER").and()
-                .withUser("david").password("{noop}password").roles("USER");
+                .withUser("david").password("{noop}password").roles("USER").and()
+                .withUser("zoey").password("{noop}password").roles("USER");
     }
 }

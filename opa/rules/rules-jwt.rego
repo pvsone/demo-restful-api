@@ -41,7 +41,7 @@ allow {
 ################
 # Filter Rules
 filter := {
-  "allowed": true,
+  "allowed": count(filter_data) > 0,
   "data": filter_data
 }
 
