@@ -1,11 +1,5 @@
 package rules
 
-# bob is alice's manager, and betty is charlie's.
-subordinates = {"alice": [], "charlie": [], "bob": ["alice"], "betty": ["charlie"]}
-
-# david is the only member of HR.
-hr = [ "david" ]
-
 ################
 # Main
 main["allowed"] = allow
@@ -19,7 +13,7 @@ allow {
   some username
   input.method == "GET"
   input.path = ["finance", "salary", username]
-  input.user == username
+  jwt.payload.user == username
 }
 
 # allow managers to get their subordinate's salaries.
@@ -27,7 +21,7 @@ allow {
   some username
   input.method == "GET"
   input.path = ["finance", "salary", username]
-  subordinates[input.user][_] == username
+  jwt.payload.subordinates[_] == username
 }
 
 # allow HR members to get anyone's salary.
@@ -61,7 +55,7 @@ filter_data[record] {
 filter_data[record] {
   not user_is_hr
   some i
-  input.data[i].name == input.user
+  input.data[i].name == jwt.payload.user
   record := input.data[i]
 }
 
@@ -69,10 +63,15 @@ filter_data[record] {
 filter_data[record] {
   not user_is_hr
   some i,j
-  subordinates[input.user][i] == input.data[j].name
+  jwt.payload.subordinates[i] == input.data[j].name
   record := json.remove(input.data[j], ["ssn"])
 }
 
 user_is_hr {
-  input.user == hr[_]
+  jwt.payload.hr == true
+}
+
+# Helper to get the jwt payload.
+jwt = {"payload": payload} {
+  [header, payload, signature] := io.jwt.decode(input.jwt)
 }
